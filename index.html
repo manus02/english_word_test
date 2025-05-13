@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英语单词学习管理系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#FF7D00',
+                        neutral: {
+                            100: '#F5F7FA',
+                            200: '#E4E7ED',
+                            300: '#C0C4CC',
+                            400: '#909399',
+                            500: '#606266',
+                            600: '#303133',
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 4px 20px rgba(0, 0, 0, 0.08)',
+                        'card-hover': '0 8px 30px rgba(0, 0, 0, 0.12)',
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-transition {
+                transition: all 0.3s ease;
+            }
+            .progress-animation {
+                transition: width 1s ease-in-out;
+            }
+            .word-appear {
+                animation: wordAppear 0.5s ease-out;
+            }
+            .fade-in {
+                animation: fadeIn 0.5s ease-out;
+            }
+            .slide-up {
+                animation: slideUp 0.5s ease-out;
+            }
+            .slide-in {
+                animation: slideIn 0.3s ease-out;
+            }
+            .scale-hover {
+                transition: transform 0.2s ease;
+            }
+            .scale-hover:hover {
+                transform: scale(1.03);
+            }
+        }
+        
+        @keyframes wordAppear {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            0% { transform: translateX(-20px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="font-inter bg-neutral-100 text-neutral-600 min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-book-open text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-neutral-600">英语单词学习管理系统</h1>
+            </div>
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#dashboard" class="font-medium text-primary border-b-2 border-primary pb-1">仪表盘</a>
+                <a href="#students" class="font-medium text-neutral-500 hover:text-primary transition-colors duration-200">学生管理</a>
+                <a href="#vocabulary" class="font-medium text-neutral-500 hover:text-primary transition-colors duration-200">单词库</a>
+                <a href="#exercises" class="font-medium text-neutral-500 hover:text-primary transition-colors duration-200">练习管理</a>
+                <a href="#analytics" class="font-medium text-neutral-500 hover:text-primary transition-colors duration-200">数据分析</a>
+            </nav>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <button class="bg-neutral-100 hover:bg-neutral-200 p-2 rounded-full transition-colors duration-200">
+                        <i class="fa-solid fa-bell text-neutral-500"></i>
+                    </button>
+                    <span class="absolute top-0 right-0 h-4 w-4 bg-secondary rounded-full flex items-center justify-center text-white text-xs">3</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <img src="https://picsum.photos/id/64/40/40" alt="教师头像" class="w-8 h-8 rounded-full object-cover">
+                    <span class="hidden md:inline font-medium">王老师</span>
+                </div>
+                <button class="md:hidden text-neutral-600">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容区域 -->
+    <main class="flex-grow container mx-auto px-4 py-6">
+        <!-- 欢迎区域 -->
+        <section id="dashboard" class="mb-8">
+            <div class="bg-gradient-to-r from-primary/90 to-primary rounded-xl p-6 text-white shadow-lg">
+                <div class="flex flex-col md:flex-row md:items-center justify-between">
+                    <div class="mb-4 md:mb-0">
+                        <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-2">欢迎回来，王老师</h2>
+                        <p class="text-white/80 text-lg">今天是2025年5月13日，星期二</p>
+                        <p class="text-white/80 mt-1">共有32名学生正在使用系统学习英语单词</p>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button class="bg-white text-primary px-4 py-2 rounded-lg font-medium shadow-md hover:shadow-lg transition-shadow duration-200 flex items-center">
+                            <i class="fa-solid fa-plus mr-2"></i> 添加新单词
+                        </button>
+                        <button class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center">
+                            <i class="fa-solid fa-graduation-cap mr-2"></i> 创建练习
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 统计卡片区域 -->
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl p-6 shadow-card hover:shadow-card-hover card-transition scale-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-semibold text-lg text-neutral-600">总单词量</h3>
+                    <div class="bg-primary/10 p-3 rounded-lg">
+                        <i class="fa-solid fa-book text-primary text-xl"></i>
+                    </div>
+                </div>
+                <p class="text-3xl font-bold text-neutral-800 mb-2">1,248</p>
+                <div class="flex items-center text-sm">
+                    <span class="text-green-500 flex items-center">
+                        <i class="fa-solid fa-arrow-up mr-1"></i> 12%
+                    </span>
+                    <span class="text-neutral-400 ml-2">较上月</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-card hover:shadow-card-hover card-transition scale-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-semibold text-lg text-neutral-600">学生数量</h3>
+                    <div class="bg-secondary/10 p-3 rounded-lg">
+                        <i class="fa-solid fa-users text-secondary text-xl"></i>
+                    </div>
+                </div>
+                <p class="text-3xl font-bold text-neutral-800 mb-2">32</p>
+                <div class="flex items-center text-sm">
+                    <span class="text-green-500 flex items-center">
+                        <i class="fa-solid fa-arrow-up mr-1"></i> 5%
+                    </span>
+                    <span class="text-neutral-400 ml-2">较上月</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-card hover:shadow-card-hover card-transition scale-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-semibold text-lg text-neutral-600">已完成练习</h3>
+                    <div class="bg-green-500/10 p-3 rounded-lg">
+                        <i class="fa-solid fa-check-circle text-green-500 text-xl"></i>
+                    </div>
+                </div>
+                <p class="text-3xl font-bold text-neutral-800 mb-2">248</p>
+                <div class="flex items-center text-sm">
+                    <span class="text-green-500 flex items-center">
+                        <i class="fa-solid fa-arrow-up mr-1"></i> 23%
+                    </span>
+                    <span class="text-neutral-400 ml-2">较上月</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-card hover:shadow-card-hover card-transition scale-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-semibold text-lg text-neutral-600">平均正确率</h3>
+                    <div class="bg-blue-500/10 p-3 rounded-lg">
+                        <i class="fa-solid fa-chart-line text-blue-500 text-xl"></i>
+                    </div>
+                </div>
+                <p class="text-3xl font-bold text-neutral-800 mb-2">78%</p>
+                <div class="flex items-center text-sm">
+                    <span class="text-red-500 flex items-center">
+                        <i class="fa-solid fa-arrow-down mr-1"></i> 2%
+                    </span>
+                    <span class="text-neutral-400 ml-2">较上月</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 学生成绩统计和单词练习区域 -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- 学生成绩统计 -->
+            <div class="lg:col-span-2 bg-white rounded-xl p-6 shadow-card">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="font-bold text-xl text-neutral-800">学生成绩统计</h3>
+                    <div class="flex space-x-2">
+                        <select class="bg-neutral-100 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+                            <option>全部班级</option>
+                            <option>高一(1)班</option>
+                            <option>高一(2)班</option>
+                            <option>高二(1)班</option>
+                        </select>
+                        <select class="bg-neutral-100 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+                            <option>最近30天</option>
+                            <option>本学期</option>
+                            <option>上学期</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="h-[300px]">
+                    <canvas id="studentPerformanceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 单词练习情况 -->
+            <div class="bg-white rounded-xl p-6 shadow-card">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="font-bold text-xl text-neutral-800">单词练习情况</h3>
+                    <button class="text-primary text-sm hover:underline">查看全部</button>
+                </div>
+                <div class="space-y-6">
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="font-medium">基础词汇</span>
+                            <span class="text-sm text-neutral-500">75%</span>
+                        </div>
+                        <div class="w-full bg-neutral-200 rounded-full h-2.5">
+                            <div class="bg-primary h-2.5 rounded-full progress-animation" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="font-medium">进阶词汇</span>
+                            <span class="text-sm text-neutral-500">48%</span>
+                        </div>
+                        <div class="w-full bg-neutral-200 rounded-full h-2.5">
+                            <div class="bg-secondary h-2.5 rounded-full progress-animation" style="width: 48%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="font-medium">高频词组</span>
+                            <span class="text-sm text-neutral-500">62%</span>
+                        </div>
+                        <div class="w-full bg-neutral-200 rounded-full h-2.5">
+                            <div class="bg-green-500 h-2.5 rounded-full progress-animation" style="width: 62%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="font-medium">学术词汇</span>
+                            <span class="text-sm text-neutral-500">33%</span>
+                        </div>
+                        <div class="w-full bg-neutral-200 rounded-full h-2.5">
+                            <div class="bg-blue-500 h-2.5 rounded-full progress-animation" style="width: 33%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-8 pt-6 border-t border-neutral-200">
+                    <h4 class="font-medium mb-4">推荐学习内容</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center p-3 bg-neutral-50 rounded-lg">
+                            <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                                <i class="fa-solid fa-book"></i>
+                            </div>
+                            <div class="ml-3 flex-grow">
+                                <p class="font-medium text-sm">高中必背3500词</p>
+                                <p class="text-xs text-neutral-500">120个单词 · 预计15分钟</p>
+                            </div>
+                            <button class="text-primary text-sm">开始学习</button>
+                        </div>
+                        <div class="flex items-center p-3 bg-neutral-50 rounded-lg">
+                            <div class="w-10 h-10 bg-secondary/10 rounded-full flex items-center justify-center text-secondary">
+                                <i class="fa-solid fa-flash"></i>
+                            </div>
+                            <div class="ml-3 flex-grow">
+                                <p class="font-medium text-sm">高频错题集</p>
+                                <p class="text-xs text-neutral-500">38个单词 · 预计10分钟</p>
+                            </div>
+                            <button class="text-primary text-sm">开始练习</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 学生列表和错题库区域 -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- 学生列表 -->
+            <div id="students" class="lg:col-span-2 bg-white rounded-xl p-6 shadow-card">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="font-bold text-xl text-neutral-800">学生列表</h3>
+                    <div class="flex items-center space-x-3">
+                        <div class="relative">
+                            <input type="text" placeholder="搜索学生..." class="bg-neutral-100 border border-neutral-200 rounded-lg pl-10 pr-4 py-2 w-64 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+                            <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+                        </div>
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors duration-200">
+                            <i class="fa-solid fa-plus mr-1"></i> 添加学生
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-neutral-200">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">学生姓名</th>
+                                <th class="px-4 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">班级</th>
+                                <th class="px-4 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">已掌握单词</th>
+                                <th class="px-4 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">平均用时/题</th>
+                                <th class="px-4 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">正确率</th>
+                                <th class="px-4 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-neutral-200">
+                            <tr class="hover:bg-neutral-50 transition-colors duration-150">
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <img class="h-10 w-10 rounded-full object-cover" src="https://picsum.photos/id/237/100/100" alt="学生头像">
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-neutral-800">张三</div>
+                                            <div class="text-xs text-neutral-500">zhangsan@example.com</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-800">高一(1)班</div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-800">287/500</div>
+                                    <div class="w-full bg-neutral-200 rounded-full h-1.5 mt-1">
+                                        <div class="bg-primary h-1.5 rounded-full" style="width: 57%"></div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-neutral-800">
+                                    18秒
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        85%
+                                    </span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-neutral-500">
+                                    <button class="text-primary hover:text-primary/80 mr-3">查看详情</button>
+                                    <button class="text-neutral-500 hover:text-neutral-700">管理</button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-neutral-50 transition-colors duration-150">
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <img class="h-10 w-10 rounded-full object-cover" src="https://picsum.photos/id/1027/100/100" alt="学生头像">
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-neutral-800">李四</div>
+                                            <div class="text-xs text-neutral-500">lisi@example.com</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-800">高一(1)班</div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-800">321/500</div>
+                                    <div class="w-full bg-neutral-200 rounded-full h-1.5 mt-1">
+                                        <div class="bg-primary h-1.5 rounded-full" style="width: 64%"></div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-neutral-800">
+                                    22秒
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        88%
+                                    </span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-neutral-500">
+                                    <button class="text-primary hover:text-primary/80 mr-3">查看详情</button>
+                                    <button class="text-neutral-500 hover:text-neutral-700">管理</button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-neutral-50 transition-colors duration-150">
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <img class="h-10 w-10 rounded-full object-cover" src="https://picsum.photos/id/1005/100/100" alt="学生头像">
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-neutral-800">王五</div>
+                                            <div class="text-xs text-neutral-500">wangwu@example.com</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-800">高一(2)班</div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-800">198/500</div>
+                                    <div class="w-full bg-neutral-200 rounded-full h-1.5 mt-1">
+                                        <div class="bg-primary h-1.5 rounded-full" style="width: 39%"></div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-neutral-800">
+                                    25秒
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        65%
+                                    </span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-neutral-500">
+                                    <button class="text-primary hover:text-primary/80 mr-3">查看详情</button>
+                                    <button class="text-neutral-500 hover:text-neutral-700">管理</button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-neutral-50 transition-colors duration-150">
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <img class="h-10 w-10 rounded-full object-cover" src="https://picsum.photos/id/1012/100/100" alt="学生头像">
+                                        </div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-neutral-800">赵六</div>
+                                            <div class="text-xs text-neutral-500">zhaoliu@example.com</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-800">高一(2)班</div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-800">245/500</div>
+                                    <div class="w-full bg-neutral-200 rounded-full h-1.5 mt-1">
+                                        <div class="bg-primary h-1.5 rounded-full" style="width: 49%"></div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-neutral-800">
+                                    20秒
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        58%
+                                    </span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-neutral-500">
+                                    <button class="text-primary hover:text-primary/80 mr-3">查看详情</button>
+                                    <button class="text-neutral-500 hover:text-neutral-700">管理</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-6 flex items-center justify-between">
+                    <div class="text-sm text-neutral-500">
+                        显示 1 到 4 条，共 32 条记录
+                    </div>
+                    <div class="flex space-x-1">
+                        <button class="px-3 py-1 border border-neutral-300 rounded-md text-neutral-500 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button class="px-3 py-1 border border-primary bg-primary text-white rounded-md">1</button>
+                        <button class="px-3 py-1 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50">2</button>
+                        <button class="px-3 py-1 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50">3</button>
+                        <button class="px-3 py-1 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50">4</button>
+                        <button class="px-3 py-1 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50">5</button>
+                        <button class="px-3 py-1 border border-neutral-300 rounded-md text-neutral-500 hover:bg-neutral-50">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 错题库 -->
+            <div id="analytics" class="bg-white rounded-xl p-6 shadow-card">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="font-bold text-xl text-neutral-800">高频错题库</h3>
+                    <div class="flex space-x-2">
+                        <select class="bg-neutral-100 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+                            <option>全部班级</option>
+                            <option>高一(1)班</option>
+                            <option>高一(2)班</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="p-4 bg-neutral-50 rounded-lg border-l-4 border-red-500 hover:shadow-md transition-shadow duration-200">
+                        <div class="flex justify-between mb-2">
+                            <h4 class="font-medium">accommodation</h4>
+                            <span class="text-sm bg-red-100 text-red-800 px-2 py-0.5 rounded-full">错误率 78%</span>
+                        </div>
+                        <p class="text-sm text-neutral-600 mb-2">n. 住宿；膳宿；和解</p>
+                        <p class="text-xs text-neutral-500 italic">"The university provides accommodation for students."</p>
+                        <div class="mt-3 flex justify-between items-center">
+                            <span class="text-xs text-neutral-500">答错次数: 126</span>
+                            <button class="text-primary text-sm hover:underline">添加练习</button>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-neutral-50 rounded-lg border-l-4 border-red-500 hover:shadow-md transition-shadow duration-200">
+                        <div class="flex justify-between mb-2">
+                            <h4 class="font-medium">conscientious</h4>
+                            <span class="text-sm bg-red-100 text-red-800 px-2 py-0.5 rounded-full">错误率 75%</span>
+                        </div>
+                        <p class="text-sm text-neutral-600 mb-2">adj. 认真的；尽责的；本着良心的</p>
+                        <p class="text-xs text-neutral-500 italic">"She is a conscientious worker who always does her best."</p>
+                        <div class="mt-3 flex justify-between items-center">
+                            <span class="text-xs text-neutral-500">答错次数: 118</span>
+                            <button class="text-primary text-sm hover:underline">添加练习</button>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-neutral-50 rounded-lg border-l-4 border-red-500 hover:shadow-md transition-shadow duration-200">
+                        <div class="flex justify-between mb-2">
+                            <h4 class="font-medium">dilemma</h4>
+                            <span class="text-sm bg-red-100 text-red-800 px-2 py-0.5 rounded-full">错误率 72%</span>
+                        </div>
+                        <p class="text-sm text-neutral-600 mb-2">n. 困境；进退两难；两刀论法</p>
+                        <p class="text-xs text-neutral-500 italic">"She faced the dilemma of choosing between her career and her family."</p>
+                        <div class="mt-3 flex justify-between items-center">
+                            <span class="text-xs text-neutral-500">答错次数: 109</span>
+                            <button class="text-primary text-sm hover:underline">添加练习</button>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-neutral-50 rounded-lg border-l-4 border-orange-500 hover:shadow-md transition-shadow duration-200">
+                        <div class="flex justify-between mb-2">
+                            <h4 class="font-medium">exacerbate</h4>
+                            <span class="text-sm bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full">错误率 65%</span>
+                        </div>
+                        <p class="text-sm text-neutral-600 mb-2">v. 使加剧；使恶化；激怒</p>
+                        <p class="text-xs text-neutral-500 italic">"Lack of sleep can exacerbate existing health problems."</p>
+                        <div class="mt-3 flex justify-between items-center">
+                            <span class="text-xs text-neutral-500">答错次数: 94</span>
+                            <button class="text-primary text-sm hover:underline">添加练习</button>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-neutral-50 rounded-lg border-l-4 border-orange-500 hover:shadow-md transition-shadow duration-200">
+                        <div class="flex justify-between mb-2">
+                            <h4 class="font-medium">idiosyncrasy</h4>
+                            <span class="text-sm bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full">错误率 62%</span>
+                        </div>
+                        <p class="text-sm text-neutral-600 mb-2">n. 特质；习性；风格</p>
+                        <p class="text-xs text-neutral-500 italic">"One of his idiosyncrasies is always wearing two different socks."</p>
+                        <div class="mt-3 flex justify-between items-center">
+                            <span class="text-xs text-neutral-500">答错次数: 87</span>
+                            <button class="text-primary text-sm hover:underline">添加练习</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-neutral-200">
+                    <h4 class="font-medium mb-3">错误频率分析</h4>
+                    <div class="h-[200px]">
+                        <canvas id="errorFrequencyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 解题时间分析和单词管理区域 -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- 解题时间分析 -->
+            <div class="bg-white rounded-xl p-6 shadow-card">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="font-bold text-xl text-neutral-800">解题时间分析</h3>
+                    <div class="flex space-x-2">
+                        <select class="bg-neutral-100 border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+                            <option>本周</option>
+                            <option>本月</option>
+                            <option>本学期</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="h-[300px]">
+                    <canvas id="responseTimeChart"></canvas>
+                </div>
+                <div class="mt-6 grid grid-cols-2 gap-4">
+                    <div class="bg-neutral-50 p-4 rounded-lg">
+                        <h4 class="text-sm font-medium text-neutral-600 mb-2">平均解题时间</h4>
+                        <p class="text-2xl font-bold text-neutral-800">21.4秒</p>
+                        <p class="text-xs text-green-500 flex items-center">
+                            <i class="fa-solid fa-arrow-down mr-1"></i> 较上周减少2.3秒
+                        </p>
+                    </div>
+                    <div class="bg-neutral-50 p-4 rounded-lg">
+                        <h4 class="text-sm font-medium text-neutral-600 mb-2">最佳表现学生</h4>
+                        <div class="flex items-center">
+                            <img src="https://picsum.photos/id/1027/100/100" alt="学生头像" class="w-8 h-8 rounded-full object-cover">
+                            <span class="ml-2 text-sm font-medium text-neutral-800">李四 (15.8秒)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 单词管理 -->
+            <div id="vocabulary" class="lg:col-span-2 bg-white rounded-xl p-6 shadow-card">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="font-bold text-xl text-neutral-800">单词管理</h3>
+                    <div class="flex space-x-3">
+                        <div class="relative">
+                            <input type="text" placeholder="搜索单词..." class="bg-neutral-100 border border-neutral-200 rounded-lg pl-10 pr-4 py-2 w-64 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+                            <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+                        </div>
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors duration-200">
+                            <i class="fa-solid fa-plus mr-1"></i> 添加单词
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-neutral-200">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">单词</th>
+                                <th class="px-4 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">词性</th>
+                                <th class="px-4 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">释义</th>
+                                <th class="px-4 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">所属分类</th>
+                                <th class="px-4 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">错误率</th>
+                                <th class="px-4 py-3 bg-neutral-50 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-neutral-200">
+                            <tr class="hover:bg-neutral-50 transition-colors duration-150">
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-neutral-800">aberration</div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-800">n.</div>
+                                </td>
+                                <td class="px-4 py-4">
+                                    <div class="text-sm text-neutral-800">偏差；脱离常轨；心理失常</div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                        学术词汇
+                                    </span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-16 bg-neutral-200 rounded-full h-2.5 mr-2">
+                                            <div class="bg-red-500 h-2.5 rounded-full" style="width: 65%"></div>
+                                        </div>
+                                        <span class="text-sm text-neutral-800">65%</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-neutral-500">
+                                    <button class="text-primary hover:text-primary/80 mr-3">编辑</button>
+                                    <button class="text-neutral-500 hover:text-neutral-700">删除</button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-neutral-50 transition-colors duration-150">
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-neutral-800">benevolent</div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-800">adj.</div>
+                                </td>
+                                <td class="px-4 py-4">
+                                    <div class="text-sm text-neutral-800">仁慈的；慈善的；亲切的</div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        进阶词汇
+                                    </span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-16 bg-neutral-200 rounded-full h-2.5 mr-2">
+                                            <div class="bg-red-500 h-2.5 rounded-full" style="width: 42%"></div>
+                                        </div>
+                                        <span class="text-sm text-neutral-800">42%</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-neutral-500">
+                                    <button class="text-primary hover:text-primary/80 mr-3">编辑</button>
+                                    <button class="text-neutral-500 hover:text-neutral-700">删除</button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-neutral-50 transition-colors duration-150">
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-neutral-800">cautious</div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-800">adj.</div>
+                                </td>
+                                <td class="px-4 py-4">
+                                    <div class="text-sm text-neutral-800">谨慎的；十分小心的</div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                        基础词汇
+                                    </span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-16 bg-neutral-200 rounded-full h-2.5 mr-2">
+                                            <div class="bg-red-500 h-2.5 rounded-full" style="width: 28%"></div>
+                                        </div>
+                                        <span class="text-sm text-neutral-800">28%</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-neutral-500">
+                                    <button class="text-primary hover:text-primary/80 mr-3">编辑</button>
+                                    <button class="text-neutral-500 hover:text-neutral-700">删除</button>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-neutral-50 transition-colors duration-150">
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-neutral-800">diminish</div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-800">v.</div>
+                                </td>
+                                <td class="px-4 py-4">
+                                    <div class="text-sm text-neutral-800">减少，减小；贬低</div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        进阶词汇
+                                    </span>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-16 bg-neutral-200 rounded-full h-2.5 mr-2">
+                                            <div class="bg-red-500 h-2.5 rounded-full" style="width: 53%"></div>
+                                        </div>
+                                        <span class="text-sm text-neutral-800">53%</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-neutral-500">
+                                    <button class="text-primary hover:text-primary/80 mr-3">编辑</button>
+                                    <button class="text-neutral-500 hover:text-neutral-700">删除</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-6 flex justify-between items-center">
+                    <div class="text-sm text-neutral-500">
+                        显示 1 到 4 条，共 1,248 条记录
+                    </div>
+                    <div class="flex space-x-1">
+                        <button class="px-3 py-1 border border-neutral-300 rounded-md text-neutral-500 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button class="px-3 py-1 border border-primary bg-primary text-white rounded-md">1</button>
+                        <button class="px-3 py-1 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50">2</button>
+                        <button class="px-3 py-1 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50">3</button>
+                        <button class="px-3 py-1 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50">...</button>
+                        <button class="px-3 py-1 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50">312</button>
+                        <button class="px-3 py-1 border border-neutral-300 rounded-md text-neutral-500 hover:bg-neutral-50">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white border-t border-neutral-200 py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-book-open text-primary text-xl"></i>
+                        <span class="font-bold text-neutral-800">英语单词学习管理系统</span>
+                    </div>
+                    <p class="text-sm text-neutral-500 mt-1">帮助学生高效学习英语单词的智能系统</p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-neutral-500 hover:text-primary transition-colors duration-200">
+                        <i class="fa-solid fa-question-circle"></i>
+                        <span class="ml-1">帮助中心</span>
+                    </a>
+                    <a href="#" class="text-neutral-500 hover:text-primary transition-colors duration-200">
+                        <i class="fa-solid fa-file-text"></i>
+                        <span class="ml-1">使用指南</span>
+                    </a>
+                    <a href="#" class="text-neutral-500 hover:text-primary transition-colors duration-200">
+                        <i class="fa-solid fa-envelope"></i>
+                        <span class="ml-1">联系我们</span>
+                    </a>
+                </div>
+            </div>
+            <div class="mt-6 pt-6 border-t border-neutral-200 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-sm text-neutral-500">© 2025 英语单词学习管理系统. 保留所有权利.</p>
+                <div class="mt-4 md:mt-0 flex space-x-4">
+                    <a href="#" class="text-neutral-500 hover:text-primary transition-colors duration-200">
+                        <i class="fa-brands fa-weixin text-xl"></i>
+                    </a>
+                    <a href="#" class="text-neutral-500 hover:text-primary transition-colors duration-200">
+                        <i class="fa-brands fa-weibo text-xl"></i>
+                    </a>
+                    <a href="#" class="text-neutral-500 hover:text-primary transition-colors duration-200">
+                        <i class="fa-brands fa-github text-xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 学生成绩统计图表
+        const studentPerformanceCtx = document.getElementById('studentPerformanceChart').getContext('2d');
+        const studentPerformanceChart = new Chart(studentPerformanceCtx, {
+            type: 'bar',
+            data: {
+                labels: ['张三', '李四', '王五', '赵六', '钱七', '孙八', '周九', '吴十'],
+                datasets: [{
+                    label: '平均正确率',
+                    data: [85, 88, 65, 58, 72, 78, 81, 62],
+                    backgroundColor: '#165DFF',
+                    borderRadius: 6,
+                }, {
+                    label: '解题速度(秒/题)',
+                    data: [18, 22, 25, 20, 19, 23, 21, 24],
+                    backgroundColor: '#FF7D00',
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+
+        // 错误频率分析图表
+        const errorFrequencyCtx = document.getElementById('errorFrequencyChart').getContext('2d');
+        const errorFrequencyChart = new Chart(errorFrequencyCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['accommodation', 'conscientious', 'dilemma', 'exacerbate', 'idiosyncrasy', '其他'],
+                datasets: [{
+                    data: [126, 118, 109, 94, 87, 345],
+                    backgroundColor: [
+                        '#ef4444',
+                        '#f87171',
+                        '#fb923c',
+                        '#fbbf24',
+                        '#fcd34d',
+                        '#d1d5db'
+                    ],
+                    borderWidth: 0,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            padding: 15
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+
+        // 解题时间分析图表
+        const responseTimeCtx = document.getElementById('responseTimeChart').getContext('2d');
+        const responseTimeChart = new Chart(responseTimeCtx, {
+            type: 'line',
+            data: {
+                labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                datasets: [{
+                    label: '平均解题时间(秒)',
+                    data: [24.3, 23.1, 22.5, 21.7, 20.9, 22.1, 21.4],
+                    backgroundColor: 'rgba(22, 93, 255, 0.1)',
+                    borderColor: '#165DFF',
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#165DFF',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 15,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // 模拟学生做题过程
+        const simulateExercise = () => {
+            const words = [
+                { word: "aberration", definition: "偏差；脱离常轨；心理失常", category: "学术词汇" },
+                { word: "benevolent", definition: "仁慈的；慈善的；亲切的", category: "进阶词汇" },
+                { word: "cautious", definition: "谨慎的；十分小心的", category: "基础词汇" },
+                { word: "diminish", definition: "减少，减小；贬低", category: "进阶词汇" },
+                { word: "elaborate", definition: "详尽的；精心制作的", category: "学术词汇" },
+                { word: "fervent", definition: "热烈的；热情的；炽热的", category: "进阶词汇" },
+                { word: "gregarious", definition: "社交的；群居的", category: "基础词汇" },
+                { word: "hesitant", definition: "犹豫的；迟疑的；踌躇的", category: "进阶词汇" }
+            ];
+
+            // 随机选择一个单词
+            const randomWord = words[Math.floor(Math.random() * words.length)];
+            
+            // 创建模拟对话框
+            const dialog = document.createElement('div');
+            dialog.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
+            dialog.innerHTML = `
+                <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-auto p-6 word-appear">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-xl text-neutral-800">单词练习</h3>
+                        <button id="closeDialog" class="text-neutral-400 hover:text-neutral-600">
+                            <i class="fa-solid fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <div class="mb-6">
+                        <p class="text-2xl font-bold text-neutral-800 mb-2">${randomWord.word}</p>
+                        <p class="text-sm text-neutral-500 mb-4">${randomWord.category}</p>
+                        <p class="text-lg text-neutral-600 italic mb-4">"She showed a momentary ${randomWord.word} from her usual behavior."</p>
+                    </div>
+                    <div class="mb-6">
+                        <p class="font-medium text-neutral-800 mb-3">请选择 ${randomWord.word} 的正确释义：</p>
+                        <div class="space-y-2">
+                            <button class="w-full text-left p-3 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors duration-150">
+                                偏差；脱离常轨；心理失常
+                            </button>
+                            <button class="w-full text-left p-3 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors duration-150">
+                                精心制作；详细阐述
+                            </button>
+                            <button class="w-full text-left p-3 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors duration-150">
+                                减少，减小；贬低
+                            </button>
+                            <button class="w-full text-left p-3 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors duration-150">
+                                社交的；群居的
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex justify-between">
+                        <button class="px-4 py-2 border border-neutral-300 rounded-lg text-neutral-700 hover:bg-neutral-50 transition-colors duration-150">
+                            上一个
+                        </button>
+                        <button class="px-4 py-2 border border-neutral-300 rounded-lg text-neutral-700 hover:bg-neutral-50 transition-colors duration-150">
+                            下一个
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(dialog);
+            
+            // 关闭对话框
+            document.getElementById('closeDialog').addEventListener('click', () => {
+                dialog.classList.add('fade-out');
+                setTimeout(() => {
+                    document.body.removeChild(dialog);
+                }, 300);
+            });
+        };
+
+        // 为开始练习按钮添加事件监听
+        document.querySelectorAll('button:contains("开始练习")').forEach(button => {
+            button.addEventListener('click', simulateExercise);
+        });
+
+        // 为查看详情按钮添加事件监听
+        document.querySelectorAll('button:contains("查看详情")').forEach(button => {
+            button.addEventListener('click', () => {
+                // 这里可以添加查看学生详情的功能
+                alert('查看学生详情功能将在后续版本中实现');
+            });
+        });
+    </script>
+</body>
+</html>
+    
